@@ -139,7 +139,10 @@
 
         const items = newsletters.map(item => `
           <div class="newsletter-item">
-            <div class="newsletter-title">${item.title}</div>
+            <div class="newsletter-title">
+              ${item.title} – ${formatDate(item.date)}
+            </div>
+            <div class="newsletter-date"></div>
             <div class="newsletter-date">${formatDate(item.date)}</div>
             <a class="download-btn" href="${item.file}" download>Download PDF</a>
           </div>
