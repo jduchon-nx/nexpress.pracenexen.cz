@@ -1,161 +1,186 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Newsletters</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nexpress</title>
+
   <style>
     :root {
+      --purple: #812990;
+      --black: #000000;
       --bg: #f5f7fb;
       --card: #ffffff;
       --text: #1f2937;
       --muted: #6b7280;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
       --border: #e5e7eb;
-    }
-
-    * {
-      box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: "Roboto", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      padding: 24px;
+    }
+
+    .header {
+      background: var(--purple);
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: bold;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+    }
+
+    .lang-switch button {
+      background: white;
+      color: var(--purple);
+      border: none;
+      padding: 6px 10px;
+      margin-left: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
     }
 
     .container {
       max-width: 900px;
-      margin: 0 auto;
+      margin: 30px auto;
+      padding: 0 16px;
     }
 
     .card {
       background: var(--card);
-      border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
 
     h1 {
       margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 2rem;
     }
 
     .subtitle {
-      margin: 0 0 28px;
       color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .newsletter-list {
-      display: grid;
-      gap: 16px;
+      margin-bottom: 20px;
     }
 
     .newsletter-item {
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      background: #fafafa;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
     }
 
     .newsletter-title {
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-weight: bold;
       margin-bottom: 6px;
     }
 
     .newsletter-date {
       color: var(--muted);
-      margin-bottom: 14px;
-      font-size: 0.95rem;
+      margin-bottom: 10px;
     }
 
-    .download-btn {
-      display: inline-block;
-      padding: 10px 16px;
-      background: var(--accent);
-      color: #fff;
+    .btn {
+      background: var(--purple);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
       text-decoration: none;
-      border-radius: 10px;
-      font-weight: 700;
+      font-weight: bold;
     }
 
-    .download-btn:hover {
-      background: var(--accent-hover);
-    }
-
-    .empty,
-    .loading,
-    .error {
-      color: var(--muted);
-      padding: 20px 0;
+    .btn:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <main class="card">
-      <h1>Public Newsletters</h1>
-      <p class="subtitle">
-        Download the latest newsletters below.
-      </p>
 
-      <div id="content" class="loading">Loading newsletters...</div>
-    </main>
+  <div class="header">
+    <div class="logo">NEXPRESS</div>
+
+    <div class="lang-switch">
+      <button onclick="setLang('cs')">CZ</button>
+      <button onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+
+      <h1 id="title"></h1>
+      <p class="subtitle" id="subtitle"></p>
+
+      <div id="content">Loading...</div>
+
+    </div>
   </div>
 
   <script>
+    let lang = "cs";
+
+    const translations = {
+      cs: {
+        title: "Firemní newsletter",
+        subtitle: "Stáhněte si nejnovější vydání Nexpress.",
+        download: "Stáhnout PDF"
+      },
+      en: {
+        title: "Company Newsletter",
+        subtitle: "Download the latest Nexpress issue.",
+        download: "Download PDF"
+      }
+    };
+
+    function setLang(l) {
+      lang = l;
+      renderStatic();
+      loadNewsletters();
+    }
+
     function formatDate(dateStr) {
       const date = new Date(dateStr);
-      if (Number.isNaN(date.getTime())) return dateStr;
-      return date.toLocaleDateString("en-GB", {
+      return date.toLocaleDateString(lang === "cs" ? "cs-CZ" : "en-GB", {
         year: "numeric",
         month: "long"
       });
     }
 
-    async function loadNewsletters() {
-      const content = document.getElementById("content");
-
-      try {
-        const response = await fetch("newsletters.json", { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error("Failed to load newsletters.json");
-        }
-
-        const newsletters = await response.json();
-
-        if (!Array.isArray(newsletters) || newsletters.length === 0) {
-          content.innerHTML = '<div class="empty">No newsletters available yet.</div>';
-          return;
-        }
-
-        const items = newsletters.map(item => `
-          <div class="newsletter-item">
-            <div class="newsletter-title">
-              ${item.title} – ${formatDate(item.date)}
-            </div>
-            <div class="newsletter-date"></div>
-            <div class="newsletter-date">${formatDate(item.date)}</div>
-            <a class="download-btn" href="${item.file}" download>Download PDF</a>
-          </div>
-        `).join("");
-
-        content.innerHTML = `<div class="newsletter-list">${items}</div>`;
-      } catch (error) {
-        content.innerHTML = `<div class="error">Could not load newsletters.</div>`;
-        console.error(error);
-      }
+    function renderStatic() {
+      document.getElementById("title").innerText = translations[lang].title;
+      document.getElementById("subtitle").innerText = translations[lang].subtitle;
     }
 
+    async function loadNewsletters() {
+      const res = await fetch("newsletters.json");
+      const data = await res.json();
+
+      const html = data.map(n => `
+        <div class="newsletter-item">
+          <div class="newsletter-title">
+            Nexpress – ${formatDate(n.date)}
+          </div>
+          <div class="newsletter-date">${formatDate(n.date)}</div>
+          <a class="btn" href="${n.file}" download>
+            ${translations[lang].download}
+          </a>
+        </div>
+      `).join("");
+
+      document.getElementById("content").innerHTML = html;
+    }
+
+    renderStatic();
     loadNewsletters();
   </script>
+
 </body>
 </html>
