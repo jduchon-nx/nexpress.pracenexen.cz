@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Newsletter Download</title>
+  <title>Newsletters</title>
   <style>
     :root {
       --bg: #f5f7fb;
@@ -25,92 +25,134 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 24px;
     }
 
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
     .card {
-      width: 100%;
-      max-width: 700px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 40px 32px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      text-align: center;
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
     }
 
     h1 {
-      margin: 0 0 12px;
+      margin-top: 0;
+      margin-bottom: 10px;
       font-size: 2rem;
     }
 
-    p {
-      margin: 0;
+    .subtitle {
+      margin: 0 0 28px;
       color: var(--muted);
       line-height: 1.6;
     }
 
-    .newsletter-box {
-      margin-top: 28px;
-      padding: 24px;
+    .newsletter-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .newsletter-item {
       border: 1px solid var(--border);
       border-radius: 12px;
+      padding: 20px;
       background: #fafafa;
     }
 
     .newsletter-title {
-      font-size: 1.25rem;
-      font-weight: bold;
-      margin-bottom: 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
     }
 
-    .newsletter-meta {
-      font-size: 0.95rem;
+    .newsletter-date {
       color: var(--muted);
-      margin-bottom: 20px;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
     }
 
     .download-btn {
       display: inline-block;
-      padding: 14px 22px;
+      padding: 10px 16px;
       background: var(--accent);
       color: #fff;
       text-decoration: none;
       border-radius: 10px;
-      font-weight: bold;
-      transition: background 0.2s ease;
+      font-weight: 700;
     }
 
     .download-btn:hover {
       background: var(--accent-hover);
     }
 
-    .footer {
-      margin-top: 22px;
-      font-size: 0.9rem;
+    .empty,
+    .loading,
+    .error {
       color: var(--muted);
+      padding: 20px 0;
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>Newsletter</h1>
-    <p>
-      Download the latest public newsletter below.
-    </p>
+  <div class="container">
+    <main class="card">
+      <h1>Public Newsletters</h1>
+      <p class="subtitle">
+        Download the latest newsletters below.
+      </p>
 
-    <section class="newsletter-box">
-      <div class="newsletter-title">Monthly Newsletter – March 2026</div>
-      <div class="newsletter-meta">PDF download • Publicly available</div>
-      <a class="download-btn" href="newsletter.pdf" download>Download Newsletter</a>
-    </section>
+      <div id="content" class="loading">Loading newsletters...</div>
+    </main>
+  </div>
 
-    <div class="footer">
-      Upload your PDF as <strong>newsletter.pdf</strong> in the same GitHub Pages folder as this file.
-    </div>
-  </main>
+  <script>
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      if (Number.isNaN(date.getTime())) return dateStr;
+      return date.toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "long"
+      });
+    }
+
+    async function loadNewsletters() {
+      const content = document.getElementById("content");
+
+      try {
+        const response = await fetch("newsletters.json", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Failed to load newsletters.json");
+        }
+
+        const newsletters = await response.json();
+
+        if (!Array.isArray(newsletters) || newsletters.length === 0) {
+          content.innerHTML = '<div class="empty">No newsletters available yet.</div>';
+          return;
+        }
+
+        const items = newsletters.map(item => `
+          <div class="newsletter-item">
+            <div class="newsletter-title">${item.title}</div>
+            <div class="newsletter-date">${formatDate(item.date)}</div>
+            <a class="download-btn" href="${item.file}" download>Download PDF</a>
+          </div>
+        `).join("");
+
+        content.innerHTML = `<div class="newsletter-list">${items}</div>`;
+      } catch (error) {
+        content.innerHTML = `<div class="error">Could not load newsletters.</div>`;
+        console.error(error);
+      }
+    }
+
+    loadNewsletters();
+  </script>
 </body>
 </html>
