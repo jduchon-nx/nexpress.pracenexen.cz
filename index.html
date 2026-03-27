@@ -24,18 +24,14 @@
     }
 
     .header {
-      background: var(--purple);
-      color: white;
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: white;
+      border-bottom: 3px solid var(--purple);
     }
 
-    .logo {
-      font-weight: bold;
-      font-size: 1.2rem;
-      letter-spacing: 1px;
+    .logo img {
+      height: 40px;
+      max-width: 250px;
+      object-fit: contain;
     }
 
     .lang-switch button {
@@ -105,9 +101,9 @@
 <body>
 
   <div class="header">
-    <div class="logo">
-    <img src="logo.svg" alt="Nexen Tire" />
-    </div>
+  <div class="logo">
+    <img src="logo.png" alt="Nexen Tire">
+  </div>
 
     <div class="lang-switch">
       <button onclick="setLang('cs')">CZ</button>
